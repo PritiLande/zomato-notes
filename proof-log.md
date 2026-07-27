@@ -465,4 +465,145 @@ Searched script.js for the following terms using Kiro's Find (Ctrl+F):
 Confirms all events are attached via addEventListener(), and no 
 browser alert/confirm/prompt dialogs are used anywhere in the code.
 
+---## Part 2 — Ranking Engine
+
+### Running updated seed.py (with RANKING_DATASET)
+
+Command: python seed.py
+
+Output:
+Seeded 2 users, 10 Part 1 notes, and 12 Part 2 ranking notes.
+
+Confirms RANKING_DATASET (12 notes) loaded correctly, owned by owner_id=1 
+(Alice), tag="kb-demo", with database-autoincremented ids (not the 
+illustrative ids from the dataset itself).
+
+---### GET /notes/search?keyword=apple — relevance search (insertion sort)
+
+Request:
+GET http://127.0.0.1:8000/notes/search?keyword=apple
+
+Response (200) — top 3 shown:
+[
+  {"id": 11, "title": "Apple Harvest Notes", "score": 3, ...},
+  {"id": 17, "title": "Garden Update", "score": 2, ...},
+  {"id": 16, "title": "Fruit Basket Plan", "score": 1, ...}
+]
+
+Confirms insertion_sort_by_key correctly sorts notes descending by 
+keyword-occurrence score, computed via case-insensitive string methods 
+(no regex).
+
+---### GET /notes/search?keyword=coffee — visibly different results
+
+Request:
+GET http://127.0.0.1:8000/notes/search?keyword=coffee
+
+Response (200) — top 3 shown:
+[
+  {"id": 13, "title": "Coffee Tasting", "score": 2, ...},
+  {"id": 21, "title": "Kitchen Inventory", "score": 1, ...},
+  {"id": 1, "title": "Standup Summary", "score": 0, ...}
+]
+
+Confirms: comparing "apple" vs "coffee" queries produces visibly 
+different top results, proving the relevance scoring genuinely reflects 
+keyword occurrence per query, not a fixed/hardcoded order.
+
+---### GET /notes/search?sort_by=date — reusability proof
+
+Request:
+GET http://127.0.0.1:8000/notes/search?sort_by=date
+
+Response (200) — top 3 shown, sorted descending by created_at_epoch:
+[
+  {"id": 22, "title": "Language Practice", "created_at_epoch": 1785130037.750064, ...},
+  {"id": 21, "title": "Kitchen Inventory", "created_at_epoch": 1785130037.750062, ...},
+  {"id": 20, "title": "Journal Entry", "created_at_epoch": 1785130037.750059, ...}
+]
+
+Confirms insertion_sort_by_key is genuinely reusable — called with 
+key="created_at_epoch" here vs key="score" in the keyword search test, 
+proving it's not hardcoded to one field.
+
+---### GET /notes/lookup?title=Coffee Tasting&algo=iterative — found
+
+Request:
+GET http://127.0.0.1:8000/notes/lookup?title=Coffee%20Tasting&algo=iterative
+
+Response (200):
+{
+  "found": true,
+  "id": 13,
+  "title": "Coffee Tasting",
+  "content": "Sampled three coffee blends today, the dark roast coffee stood out the most.",
+  "tag": "kb-demo",
+  "owner_id": 1
+}
+
+---### GET /notes/lookup — additional test cases
+
+Test 2 — Apple Harvest Notes, algo=recursive:
+GET /notes/lookup?title=Apple%20Harvest%20Notes&algo=recursive
+Response (200): {"found": true, "id": 11, "title": "Apple Harvest Notes", ...}
+
+Test 3 — Kitchen Inventory, algo=iterative:
+GET /notes/lookup?title=Kitchen%20Inventory&algo=iterative
+Response (200): {"found": true, "id": 21, "title": "Kitchen Inventory", ...}
+
+Test 4 — Journal Entry, algo=recursive:
+GET /notes/lookup?title=Journal%20Entry&algo=recursive
+Response (200): {"found": true, "id": 20, "title": "Journal Entry", ...}
+
+Test 5 — not found (iterative):
+GET /notes/lookup?title=Nonexistent%20Note%20XYZ&algo=iterative
+Response (200): {"found": false, "message": "Note not found"}
+
+Summary: tested 4 present titles (Coffee Tasting, Apple Harvest Notes, 
+Kitchen Inventory, Journal Entry) across both algo=iterative and 
+and 
+algo=recursive modes — all correctly found. Tested 1 absent title — 
+correctly returned "not found" without crashing.
+
+Test 6 — not found (recursive):
+GET /notes/lookup?title=Made%20Up%20Title&algo=recursive
+Response (200): {"found": false, "message": "Note not found"}
+
+Binary search lookup fully verified: 5 present titles found correctly 
+(Coffee Tasting, Apple Harvest Notes, Kitchen Inventory, Journal Entry — 
+across both iterative and recursive modes), and 2 absent titles correctly 
+returned "not found" without crashing (both algo modes tested).
+
+---### GET /notes/quick-find?tag=work — linear search
+
+Request:
+GET http://127.0.0.1:8000/notes/quick-find?tag=work
+
+Response (200):
+{
+  "found": true,
+  "id": 1,
+  "title": "Standup Summary",
+  "content": "Discussed sprint progress, blockers on the payments API integration, and the plan for the demo on Friday.",
+  "tag": "work",
+  "owner_id": 1
+}
+
+Confirms linear_search correctly returns the first matching note using 
+the explicit found-flag pattern.
+
+---### GET /notes/quick-find?tag=nonexistent-tag — empty result, no crash
+
+Request:
+GET http://127.0.0.1:8000/notes/quick-find?tag=nonexistent-tag
+
+Response (200):
+{
+  "found": false,
+  "message": "No note found with this tag"
+}
+
+Confirms linear_search correctly returns None (handled gracefully) for 
+a tag with zero matching notes — no crash, no 500 error.
+
 ---

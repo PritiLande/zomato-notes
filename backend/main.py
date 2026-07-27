@@ -12,6 +12,7 @@ import models
 import schemas
 import crud
 from database import engine, get_db
+from algorithms import insertion_sort_by_key, binary_search_iterative, binary_search_recursive, linear_search
 
 load_dotenv()
 
@@ -26,7 +27,6 @@ app = FastAPI(title="Zomato Notes API")
 DELETE_AUTH_TOKEN = os.getenv("DELETE_AUTH_TOKEN", "changeme123")
 
 # ---------- CORS ----------
-# Allow only the local frontend origin (adjust if you serve frontend differently)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
@@ -85,6 +85,79 @@ def create_note(note: schemas.NoteCreate, background_tasks: BackgroundTasks, db:
 def list_notes(tag: str | None = None, db: Session = Depends(get_db)):
     return crud.get_notes(db, tag=tag)
 
+
+# ---------- Part 2: Ranking Engine endpoints ----------
+# IMPORTANT: these must come BEFORE /notes/{note_id} so FastAPI matches
+# exact paths like /notes/search before the generic /notes/{note_id} pattern.
+
+@app.get("/notes/search")
+def search_notes(keyword: str | None = None, sort_by: str | None = None, db: Session = Depends(get_db)):
+    all_notes = crud.get_notes(db)
+    notes_as_dicts = [
+        {
+            "id": n.id,
+            "title": n.title,
+            "content": n.content,
+            "tag": n.tag,
+            "owner_id": n.owner_id,
+            "created_at_epoch": n.created_at.timestamp(),
+        }
+        for n in all_notes
+    ]
+
+    if sort_by == "date":
+        sorted_notes = insertion_sort_by_key(notes_as_dicts, key="created_at_epoch")
+        return sorted_notes
+
+    # Default: relevance mode
+    if keyword:
+        keyword_lower = keyword.lower()
+        for note in notes_as_dicts:
+            note["score"] = note["content"].lower().count(keyword_lower)
+        sorted_notes = insertion_sort_by_key(notes_as_dicts, key="score")
+        return sorted_notes[:5]
+
+    return notes_as_dicts[:5]
+
+
+@app.get("/notes/lookup")
+def lookup_note(title: str, algo: str = "iterative", db: Session = Depends(get_db)):
+    all_notes = db.query(models.Note).order_by(models.Note.title.asc()).all()
+    sorted_titles = [n.title for n in all_notes]
+
+    if algo == "recursive":
+        index = binary_search_recursive(sorted_titles, title, 0, len(sorted_titles) - 1)
+    else:
+        index = binary_search_iterative(sorted_titles, title)
+
+    if index == -1:
+        return {"found": False, "message": "Note not found"}
+
+    found_note = all_notes[index]
+    return {
+        "found": True,
+        "id": found_note.id,
+        "title": found_note.title,
+        "content": found_note.content,
+        "tag": found_note.tag,
+        "owner_id": found_note.owner_id,
+    }
+
+
+@app.get("/notes/quick-find")
+def quick_find_notes(tag: str, db: Session = Depends(get_db)):
+    notes = crud.get_notes(db, tag=tag)
+    notes_as_dicts = [
+        {"id": n.id, "title": n.title, "content": n.content, "tag": n.tag, "owner_id": n.owner_id}
+        for n in notes
+    ]
+    result = linear_search(notes_as_dicts, key="tag", value=tag)
+    if result is None:
+        return {"found": False, "message": "No note found with this tag"}
+    return {"found": True, **result}
+
+
+# ---------- Note endpoints continued (owner_id path patterns) ----------
 
 @app.get("/notes/{note_id}", response_model=schemas.NoteResponse)
 def get_note(note_id: int, db: Session = Depends(get_db)):
