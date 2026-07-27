@@ -17,7 +17,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: #e23744; /* Zomato-ish red, just for theme */
+  background-color: #e23744;
   color: white;
   padding: 12px 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -132,6 +132,11 @@ main {
   background-color: #fafafa;
 }
 
+.note-card.highlighted {
+  border: 2px solid #e23744;
+  background-color: #fff5f5;
+}
+
 .note-card h3 {
   margin-bottom: 6px;
 }
@@ -192,6 +197,81 @@ main {
   display: none;
 }
 
+/* ---------- Part 2: Ranking controls ---------- */
+
+#ranking-controls {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.control-group label {
+  font-weight: bold;
+  font-size: 0.85rem;
+  min-width: 130px;
+}
+
+.control-group select,
+.control-group input[type="text"] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#quick-tag-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+#quick-tag-buttons button {
+  background-color: white;
+  border: 1px solid #e23744;
+  color: #e23744;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+#quick-tag-buttons button:hover {
+  background-color: #e23744;
+  color: white;
+}
+
+#lookup-result {
+  margin-bottom: 12px;
+}
+
+#lookup-result .found-note {
+  background-color: #e8f8ec;
+  border: 1px solid #b2e2bb;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+#lookup-result .not-found {
+  background-color: #fdecea;
+  border: 1px solid #f5c2c0;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #b3261e;
+}
+
 /* ---------- Footer ---------- */
 
 footer {
@@ -210,5 +290,10 @@ footer {
 
   #sidebar {
     width: 100%;
+  }
+
+  .control-group {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

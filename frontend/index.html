@@ -43,6 +43,39 @@
 
     <section id="notes-section">
       <h2>Notes</h2>
+
+      <div id="ranking-controls">
+        <div class="control-group">
+          <label for="sort-select">Sort by:</label>
+          <select id="sort-select">
+            <option value="relevance">Relevance</option>
+            <option value="date">Date</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="exact-title-input">Jump to exact title:</label>
+          <input type="text" id="exact-title-input" placeholder="Exact note title...">
+          <select id="algo-select">
+            <option value="iterative">Iterative</option>
+            <option value="recursive">Recursive</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>Quick tag jump:</label>
+          <div id="quick-tag-buttons">
+            <button type="button" data-tag="work">work</button>
+            <button type="button" data-tag="health">health</button>
+            <button type="button" data-tag="recipes">recipes</button>
+            <button type="button" data-tag="travel">travel</button>
+            <button type="button" data-tag="random">random</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="lookup-result"></div>
+
       <div id="loading-message">Loading notes…</div>
       <div id="error-message" class="error-message" hidden></div>
       <div id="notes-list"></div>

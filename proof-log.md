@@ -606,4 +606,22 @@ Response (200):
 Confirms linear_search correctly returns None (handled gracefully) for 
 a tag with zero matching notes — no crash, no 500 error.
 
+--- ## Part 2 — Frontend Controls Verification
+
+### Sort by, Jump to exact title, Quick tag jump — all working
+
+Tested manually in browser at http://127.0.0.1:5500/index.html:
+
+1. "Jump to exact title" — typed "Coffee Tasting", pressed Enter, 
+   correctly called GET /notes/lookup and displayed "Found: Coffee Tasting".
+
+2. "Quick tag jump" — clicked tag buttons (work/health/recipes/travel/random), 
+   correctly called GET /notes/quick-find and displayed the first matching note.
+
+3. "Sort by" dropdown — switching between Relevance/Date correctly called 
+   GET /notes/search with the appropriate parameters and re-rendered the list.
+
+All three controls call the real backend endpoints (not mocked), confirmed 
+via visible correct results in the UI.
+
 ---

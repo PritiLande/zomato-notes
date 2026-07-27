@@ -40,6 +40,31 @@ async function deleteNote(id) {
   return response.json();
 }
 
+// Part 2: Ranking Engine data layer
+
+async function searchNotes({ keyword, sortBy }) {
+  const params = new URLSearchParams();
+  if (keyword) params.set("keyword", keyword);
+  if (sortBy) params.set("sort_by", sortBy);
+  const response = await fetch(`${API_BASE}/notes/search?${params.toString()}`);
+  if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+  return response.json();
+}
+
+async function lookupNoteByTitle(title, algo) {
+  const params = new URLSearchParams({ title, algo });
+  const response = await fetch(`${API_BASE}/notes/lookup?${params.toString()}`);
+  if (!response.ok) throw new Error(`Lookup failed: ${response.status}`);
+  return response.json();
+}
+
+async function quickFindByTag(tag) {
+  const params = new URLSearchParams({ tag });
+  const response = await fetch(`${API_BASE}/notes/quick-find?${params.toString()}`);
+  if (!response.ok) throw new Error(`Quick-find failed: ${response.status}`);
+  return response.json();
+}
+
 // ---------- State ----------
 
 let allNotes = [];
@@ -48,11 +73,12 @@ let allNotes = [];
 
 function renderNotes(notes) {
   const notesList = document.getElementById("notes-list");
-  notesList.innerHTML = ""; // clear previous render
+  notesList.innerHTML = "";
 
   notes.forEach((note) => {
     const card = document.createElement("div");
     card.className = "note-card";
+    card.id = `note-card-${note.id}`;
 
     const title = document.createElement("h3");
     title.textContent = note.title;
@@ -74,7 +100,6 @@ function renderNotes(notes) {
     card.appendChild(tag);
     card.appendChild(content);
 
-    // Part 3 will render note.ai_suggestion here if present
     if (note.ai_suggestion) {
       card.appendChild(renderAiSuggestion(note));
     }
@@ -205,7 +230,7 @@ document.getElementById("add-note-form").addEventListener("submit", async (e) =>
   }
 });
 
-// ---------- Debounced search ----------
+// ---------- Debounced search (Part 1 plain search) ----------
 
 let debounceTimer = null;
 
@@ -221,6 +246,81 @@ document.getElementById("search-box").addEventListener("input", (e) => {
     );
     renderNotes(filtered);
   }, 400);
+});
+
+// ---------- Part 2: Sort by Relevance / Date ----------
+
+document.getElementById("sort-select").addEventListener("change", async (e) => {
+  const sortBy = e.target.value;
+  try {
+    let results;
+    if (sortBy === "date") {
+      results = await searchNotes({ sortBy: "date" });
+    } else {
+      // relevance mode needs a keyword; use current search box value, or fallback
+      const keyword = document.getElementById("search-box").value.trim() || "the";
+      results = await searchNotes({ keyword });
+    }
+    renderNotes(results);
+  } catch (err) {
+    showError("Failed to sort notes.");
+  }
+});
+
+// ---------- Part 2: Jump to exact title (binary search) ----------
+
+document.getElementById("exact-title-input").addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+  const title = e.target.value.trim();
+  if (!title) return;
+  const algo = document.getElementById("algo-select").value;
+
+  try {
+    const result = await lookupNoteByTitle(title, algo);
+    renderLookupResult(result);
+  } catch (err) {
+    showError("Lookup failed.");
+  }
+});
+
+function renderLookupResult(result) {
+  const container = document.getElementById("lookup-result");
+  container.innerHTML = "";
+
+  if (!result.found) {
+    const notFoundDiv = document.createElement("div");
+    notFoundDiv.className = "not-found";
+    notFoundDiv.textContent = result.message || "Note not found.";
+    container.appendChild(notFoundDiv);
+    return;
+  }
+
+  const foundDiv = document.createElement("div");
+  foundDiv.className = "found-note";
+  foundDiv.textContent = `Found: "${result.title}" (tag: ${result.tag})`;
+  container.appendChild(foundDiv);
+
+  // Scroll to and highlight the note card if it's currently rendered
+  const card = document.getElementById(`note-card-${result.id}`);
+  if (card) {
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("highlighted");
+    setTimeout(() => card.classList.remove("highlighted"), 2000);
+  }
+}
+
+// ---------- Part 2: Quick tag jump (linear search) ----------
+
+document.getElementById("quick-tag-buttons").addEventListener("click", async (e) => {
+  if (e.target.tagName !== "BUTTON") return;
+  const tag = e.target.dataset.tag;
+
+  try {
+    const result = await quickFindByTag(tag);
+    renderLookupResult(result);
+  } catch (err) {
+    showError("Quick tag jump failed.");
+  }
 });
 
 // ---------- Recursive nested tag tree ----------
