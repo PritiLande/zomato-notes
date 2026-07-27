@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zomato Notes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header id="main-header">
+    <nav id="main-nav">
+      <h1>Zomato Notes</h1>
+      <input type="text" id="search-box" placeholder="Search notes...">
+    </nav>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <h2>Tags</h2>
+      <div id="tag-tree"></div>
+    </aside>
+
+    <section id="add-note-section">
+      <h2>Add Note</h2>
+      <form id="add-note-form">
+        <div class="form-group">
+          <label for="note-title">Title</label>
+          <input type="text" id="note-title" name="title">
+        </div>
+        <div class="form-group">
+          <label for="note-content">Content</label>
+          <textarea id="note-content" name="content"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="note-tag">Tag</label>
+          <input type="text" id="note-tag" name="tag">
+        </div>
+        <div id="form-error" class="error-message" hidden></div>
+        <button type="submit">Add Note</button>
+      </form>
+    </section>
+
+    <section id="notes-section">
+      <h2>Notes</h2>
+      <div id="loading-message">Loading notes…</div>
+      <div id="error-message" class="error-message" hidden></div>
+      <div id="notes-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Zomato Notes — Capstone Project</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

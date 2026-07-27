@@ -1,0 +1,214 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f7f7f7;
+  color: #222;
+  line-height: 1.5;
+}
+
+/* ---------- Header / Nav ---------- */
+
+#main-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #e23744; /* Zomato-ish red, just for theme */
+  color: white;
+  padding: 12px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#main-nav h1 {
+  font-size: 1.4rem;
+}
+
+#search-box {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  min-width: 220px;
+}
+
+/* ---------- Layout ---------- */
+
+main {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+#sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+#add-note-section,
+#notes-section {
+  flex: 1;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+/* ---------- Form ---------- */
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+#add-note-form button {
+  background-color: #e23744;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#add-note-form button:hover {
+  background-color: #c62d3a;
+}
+
+.error-message {
+  background-color: #fdecea;
+  color: #b3261e;
+  border: 1px solid #f5c2c0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+/* ---------- Notes list ---------- */
+
+.note-card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background-color: #fafafa;
+}
+
+.note-card h3 {
+  margin-bottom: 6px;
+}
+
+.note-card .note-tag {
+  display: inline-block;
+  background-color: #e23744;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.note-card .note-content {
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.note-card button.delete-btn {
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.note-card button.delete-btn:hover {
+  background-color: #333;
+}
+
+/* ---------- AI suggestion panel (Part 3) ---------- */
+
+.ai-suggests {
+  background-color: #eef6ff;
+  border: 1px solid #cfe3fb;
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+/* ---------- Tag tree (recursive) ---------- */
+
+#tag-tree ul {
+  list-style: none;
+  padding-left: 16px;
+}
+
+#tag-tree li {
+  margin: 4px 0;
+  cursor: pointer;
+}
+
+#tag-tree li.collapsed > ul {
+  display: none;
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  text-align: center;
+  padding: 16px;
+  color: #777;
+  font-size: 0.85rem;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 600px) {
+  main {
+    flex-direction: column;
+  }
+
+  #sidebar {
+    width: 100%;
+  }
+}

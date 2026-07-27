@@ -387,4 +387,82 @@ Response (422):
   ]
 }
 
+---## Part 1 — CORS Configuration
+
+The backend's CORSMiddleware is configured in main.py as follows:
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+This allows requests only from http://127.0.0.1:5500 and http://localhost:5500 
+— the local static server addresses commonly used by VSCode/Kiro's "Live Server" 
+extension to serve the frontend during development. We will serve the frontend 
+from this exact origin, and the live CORS behavior (successful cross-origin 
+fetch calls) will be demonstrated once the frontend is built, via the browser's 
+DevTools Network tab.
+
+---## Part 1B — Frontend End-to-End Verification
+
+### Initial page load — real backend data rendered
+
+Frontend served at http://127.0.0.1:5500/index.html, backend running at 
+http://127.0.0.1:8000. Page loads and successfully fetches and renders 
+real notes from the backend (Standup Summary, Sprint Retro Notes showing 
+"work-updated" tag from our earlier PUT test, One on One, etc.)
+
+Browser console shows zero CORS errors — only a harmless favicon.ico 404 
+(expected, no favicon file was created).
+
+This confirms:
+- CORS is correctly configured (frontend origin http://127.0.0.1:5500 
+  successfully calls backend at http://127.0.0.1:8000)
+- Real fetch() data layer is working, not mocked
+- Dynamic rendering via createElement/appendChild is working
+
+---### Interactive features — full verification
+
+Tested manually in browser at http://127.0.0.1:5500/index.html:
+
+1. Tag tree ("All Tags") — expands/collapses correctly on click, 
+   recursive rendering confirmed working.
+
+2. Search box — filters notes after ~400ms debounce delay, 
+   no lag or excessive re-renders on every keystroke.
+
+3. Add Note — created a test note "Fish Curry Recipe" via the form. 
+   New note appeared immediately in the notes list without a page 
+   reload, confirming real POST /notes call + dynamic DOM rendering.
+
+4. Delete — clicked Delete on the test note, it was removed from 
+   the DOM immediately, confirming real DELETE /notes/{id} call 
+   with correct x-token header.
+
+Full add → refresh → persists, delete → refresh → gone cycle confirmed 
+working end-to-end against the real backend (not mocked).
+
+---### Persistence verification (refresh test)
+
+After deleting "Fish Curry Recipe" note and refreshing the browser (F5), 
+the note did NOT reappear — confirming the DELETE was truly persisted 
+in the database, not just removed from the DOM temporarily.
+
+This satisfies the doc's core Part 1 requirement: real end-to-end 
+integration where add/delete actions persist across page refreshes.
+
+---### Code review — no inline onclick, no alert()/confirm()/prompt()
+
+Searched script.js for the following terms using Kiro's Find (Ctrl+F):
+- "onclick" → No results
+- "alert(" → No results
+- "confirm(" → No results
+- "prompt(" → No results
+
+Confirms all events are attached via addEventListener(), and no 
+browser alert/confirm/prompt dialogs are used anywhere in the code.
+
 ---
