@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environment
+backend/venv/
+venv/
+env/
+.env
+
+# Environment variables
+*.env
+.env.*
+
+# FastAPI / Uvicorn
+*.log
+
+# SQLite / Database
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/build/
+
+# Model cache (sentence-transformers)
+.cache/
+
+# Misc
+*.pem
+*.key
