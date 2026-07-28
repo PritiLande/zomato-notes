@@ -15,6 +15,7 @@ import crud
 from database import engine, get_db
 from algorithms import insertion_sort_by_key, binary_search_iterative, binary_search_recursive, linear_search
 from ai_service import get_ai_response, AUTO_TAG_SYSTEM_PROMPT
+from semantic_search import rank_notes_by_similarity
 
 load_dotenv()
 
@@ -170,6 +171,17 @@ def quick_find_notes(tag: str, db: Session = Depends(get_db)):
     if result is None:
         return {"found": False, "message": "No note found with this tag"}
     return {"found": True, **result}
+
+
+@app.get("/notes/smart-search")
+def smart_search(q: str, db: Session = Depends(get_db)):
+    notes = db.query(models.Note).filter(models.Note.tag == "ai-demo").all()
+    notes_as_dicts = [
+        {"id": n.id, "title": n.title, "content": n.content, "tag": n.tag, "owner_id": n.owner_id}
+        for n in notes
+    ]
+    results = rank_notes_by_similarity(q, notes_as_dicts, top_k=3)
+    return results
 
 
 # ---------- Note endpoints continued (owner_id path patterns) ----------

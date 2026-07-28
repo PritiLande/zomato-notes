@@ -1,6 +1,7 @@
 from database import SessionLocal, engine, Base
 import models
 from ranking_dataset import RANKING_DATASET
+from ai_sample_notes import AI_SAMPLE_NOTES
 
 # Make sure tables exist
 Base.metadata.create_all(bind=engine)
@@ -54,7 +55,6 @@ def seed():
         db.commit()
 
         # Part 2: seed the ranking dataset, owned by Alice (owner_id=1), tag="kb-demo"
-        # Let the DB autoincrement real ids (don't reuse RANKING_DATASET's illustrative ids)
         for note in RANKING_DATASET:
             db.add(models.Note(
                 owner_id=1,
@@ -64,8 +64,19 @@ def seed():
             ))
         db.commit()
 
+        # Part 3: seed the AI sample notes, owned by Bob (owner_id=2), tag="ai-demo"
+        for note in AI_SAMPLE_NOTES:
+            db.add(models.Note(
+                owner_id=2,
+                title=note["title"],
+                content=note["content"],
+                tag="ai-demo",
+            ))
+        db.commit()
+
         print(f"Seeded {len(SEED_USERS)} users, {len(SEED_NOTES)} Part 1 notes, "
-              f"and {len(RANKING_DATASET)} Part 2 ranking notes.")
+              f"{len(RANKING_DATASET)} Part 2 ranking notes, "
+              f"and {len(AI_SAMPLE_NOTES)} Part 3 AI sample notes.")
     finally:
         db.close()
 

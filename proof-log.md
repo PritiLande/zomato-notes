@@ -624,4 +624,87 @@ Tested manually in browser at http://127.0.0.1:5500/index.html:
 All three controls call the real backend endpoints (not mocked), confirmed 
 via visible correct results in the UI.
 
+---## Part 3 — Intelligence Layer (LLM Auto-Tagging)
+
+### POST /notes — ai_suggestion returned correctly (mock mode)
+
+Request:
+POST http://127.0.0.1:8000/notes
+{
+  "title": "Test AI Tagging",
+  "content": "The database migration script failed overnight due to a locked table, causing delays in the morning deployment.",
+  "tag": "test",
+  "owner_id": 1
+}
+
+Response (200):
+{
+  "id": 23,
+  "title": "Test AI Tagging",
+  "content": "The database migration script failed overnight due to a locked table, causing delays in the morning deployment.",
+  "tag": "test",
+  "owner_id": 1,
+  "created_at": "2026-07-28T03:34:25.275177",
+  "ai_suggestion": {
+    "tags": ["database", "migration", "script"],
+    "summary": "The database migration script failed overnight due to a locked table, causing delays in the morning deployment"
+  }
+}
+
+Confirms: note created successfully, get_ai_response() called server-side 
+in mock mode (MOCK_AI=1, no API key/internet needed), response parsed via 
+json.loads, and ai_suggestion correctly attached to the POST /notes response.
+
+---### Running updated seed.py (with AI_SAMPLE_NOTES)
+
+Command: python seed.py
+
+Output:
+Seeded 2 users, 10 Part 1 notes, 12 Part 2 ranking notes, and 8 Part 3 AI sample notes.
+
+Confirms AI_SAMPLE_NOTES (8 notes) loaded correctly, owned by owner_id=2 
+(Bob), tag="ai-demo", with database-autoincremented ids.
+
+---## Part 3 — Local Semantic Search
+
+### GET /notes/smart-search?q=leg day exercise plan
+
+Request:
+GET http://127.0.0.1:8000/notes/smart-search?q=leg%20day%20exercise%20plan
+
+Response (200):
+[
+  {"id": 28, "title": "Gym schedule change", "similarity_score": 0.6545901298522949, ...},
+  {"id": 23, "title": "Morning workout plan", "similarity_score": 0.6398992538452148, ...},
+  {"id": 30, "title": "Weekend hiking trip", "similarity_score": 0.4038715660572052, ...}
+]
+
+Confirms: "Gym schedule change" appears in top 3 for the query "leg day 
+exercise plan", ranked by cosine similarity using sentence-transformers/
+all-MiniLM-L6-v2 embeddings — satisfying the exact acceptance criterion 
+from the assignment doc.
+
+Note: first call took ~17s (x-process-time: 17.6s) due to one-time model 
+download from HuggingFace (~90MB). Subsequent calls are much faster since 
+the model is cached locally at ~/.cache/huggingface.
+
+---### GET /notes/smart-search?q=dinner ideas with vegetables
+
+Request:
+GET http://127.0.0.1:8000/notes/smart-search?q=dinner%20ideas%20with%20vegetables
+
+Response (200):
+[
+  {"id": 27, "title": "Recipe idea", "similarity_score": 0.5556811690330505, ...},
+  {"id": 24, "title": "Grocery list", "similarity_score": 0.423724502325058, ...},
+  {"id": 30, "title": "Weekend hiking trip", "similarity_score": 0.22370734810829163, ...}
+]
+
+Confirms: "Recipe idea" appears in top 3 for the query "dinner ideas with 
+vegetables" — satisfying the second required acceptance criterion.
+
+Note: this request took only 0.198s (vs ~17.6s for the first call), 
+confirming the model is now cached locally at ~/.cache/huggingface and 
+requires no further internet access.
+
 ---
