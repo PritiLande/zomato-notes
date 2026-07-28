@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import logging
 from datetime import datetime
 
@@ -13,6 +14,7 @@ import schemas
 import crud
 from database import engine, get_db
 from algorithms import insertion_sort_by_key, binary_search_iterative, binary_search_recursive, linear_search
+from ai_service import get_ai_response, AUTO_TAG_SYSTEM_PROMPT
 
 load_dotenv()
 
@@ -71,14 +73,27 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # ---------- Note endpoints ----------
 
-@app.post("/notes", response_model=schemas.NoteResponse)
+@app.post("/notes")
 def create_note(note: schemas.NoteCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     owner = crud.get_user(db, note.owner_id)
     if not owner:
         raise HTTPException(status_code=404, detail="owner_id does not exist")
     db_note = crud.create_note(db, note)
     background_tasks.add_task(simulate_indexing, db_note.title)
-    return db_note
+
+    ai_suggestion = None
+    try:
+        raw_response = get_ai_response(db_note.content, AUTO_TAG_SYSTEM_PROMPT)
+        parsed = json.loads(raw_response)
+        if "tags" in parsed and "summary" in parsed:
+            ai_suggestion = parsed
+    except Exception as e:
+        logger.warning(f"AI suggestion failed for note {db_note.id}: {e}")
+        ai_suggestion = None
+
+    response_data = schemas.NoteResponse.model_validate(db_note).model_dump()
+    response_data["ai_suggestion"] = ai_suggestion
+    return response_data
 
 
 @app.get("/notes", response_model=list[schemas.NoteResponse])
