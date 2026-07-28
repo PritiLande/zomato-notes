@@ -297,3 +297,42 @@ footer {
     align-items: flex-start;
   }
 }
+/* ---------- Part 3: Smart Search (AI) — visually distinct from Part 2 search ---------- */
+
+#smart-search-section {
+  background-color: #f3eaff;
+  border: 2px solid #9b59b6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+#smart-search-section label {
+  display: block;
+  font-weight: bold;
+  color: #6c3483;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+#smart-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #9b59b6;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+#smart-search-results .smart-result {
+  background-color: white;
+  border: 1px solid #d8bfe8;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+#smart-search-results .smart-result .score {
+  color: #9b59b6;
+  font-weight: bold;
+}

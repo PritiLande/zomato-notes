@@ -65,6 +65,15 @@ async function quickFindByTag(tag) {
   return response.json();
 }
 
+// Part 3: Smart Search (semantic) data layer
+
+async function smartSearch(query) {
+  const params = new URLSearchParams({ q: query });
+  const response = await fetch(`${API_BASE}/notes/smart-search?${params.toString()}`);
+  if (!response.ok) throw new Error(`Smart search failed: ${response.status}`);
+  return response.json();
+}
+
 // ---------- State ----------
 
 let allNotes = [];
@@ -257,7 +266,6 @@ document.getElementById("sort-select").addEventListener("change", async (e) => {
     if (sortBy === "date") {
       results = await searchNotes({ sortBy: "date" });
     } else {
-      // relevance mode needs a keyword; use current search box value, or fallback
       const keyword = document.getElementById("search-box").value.trim() || "the";
       results = await searchNotes({ keyword });
     }
@@ -300,7 +308,6 @@ function renderLookupResult(result) {
   foundDiv.textContent = `Found: "${result.title}" (tag: ${result.tag})`;
   container.appendChild(foundDiv);
 
-  // Scroll to and highlight the note card if it's currently rendered
   const card = document.getElementById(`note-card-${result.id}`);
   if (card) {
     card.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -322,6 +329,60 @@ document.getElementById("quick-tag-buttons").addEventListener("click", async (e)
     showError("Quick tag jump failed.");
   }
 });
+
+// ---------- Part 3: Smart Search (AI, semantic) ----------
+
+let smartSearchDebounceTimer = null;
+
+document.getElementById("smart-search-input").addEventListener("input", (e) => {
+  clearTimeout(smartSearchDebounceTimer);
+  const query = e.target.value.trim();
+  const resultsContainer = document.getElementById("smart-search-results");
+
+  if (!query) {
+    resultsContainer.innerHTML = "";
+    return;
+  }
+
+  smartSearchDebounceTimer = setTimeout(async () => {
+    try {
+      const results = await smartSearch(query);
+      renderSmartSearchResults(results);
+    } catch (err) {
+      showError("Smart search failed.");
+    }
+  }, 500);
+});
+
+function renderSmartSearchResults(results) {
+  const container = document.getElementById("smart-search-results");
+  container.innerHTML = "";
+
+  if (results.length === 0) {
+    container.textContent = "No matches found.";
+    return;
+  }
+
+  results.forEach((note) => {
+    const div = document.createElement("div");
+    div.className = "smart-result";
+
+    const titleEl = document.createElement("strong");
+    titleEl.textContent = note.title;
+
+    const scoreEl = document.createElement("span");
+    scoreEl.className = "score";
+    scoreEl.textContent = ` (similarity: ${note.similarity_score.toFixed(3)})`;
+
+    const contentEl = document.createElement("p");
+    contentEl.textContent = note.content;
+
+    div.appendChild(titleEl);
+    div.appendChild(scoreEl);
+    div.appendChild(contentEl);
+    container.appendChild(div);
+  });
+}
 
 // ---------- Recursive nested tag tree ----------
 

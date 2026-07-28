@@ -707,4 +707,40 @@ Note: this request took only 0.198s (vs ~17.6s for the first call),
 confirming the model is now cached locally at ~/.cache/huggingface and 
 requires no further internet access.
 
+---## Part 3 — Frontend Verification
+
+### Smart Search (AI) — real UI test
+
+Tested manually in browser at http://127.0.0.1:5500/index.html:
+
+Typed "dinner ideas" into the Smart Search (AI) input. Results appeared 
+in real-time (debounced), showing:
+- Grocery list (similarity: 0.381)
+- Recipe idea (similarity: 0.376)
+- Weekend hiking trip (similarity: 0.300)
+
+Confirms the Smart Search control correctly calls the real 
+GET /notes/smart-search endpoint and renders ranked results with 
+similarity scores. Visually and functionally distinct from the plain 
+keyword search box (Part 1, red theme) and the Part 2 ranking controls 
+(grey theme) — Smart Search uses a purple color scheme and calls a 
+completely different endpoint (embeddings vs keyword-count).
+
+---### AI Suggests panel + Apply as tag — real UI test
+
+Added a new note via the Add Note form:
+Title: "Server crash investigation"
+Content: "The payment service crashed due to a memory leak in the caching layer, engineers restarted the pods to restore service."
+Tag: "test"
+
+After submission, the note card displayed an "AI Suggests" panel with 
+mock-generated tags (including "payment") and a summary, plus an 
+"Apply as tag" button. Clicking "Apply as tag" called PUT /notes/{id} 
+and successfully changed the note's tag from "test" to "payment" — 
+confirmed by the tag badge updating on the note card after re-render.
+
+This confirms the full real, end-to-end flow: POST /notes → AI mock 
+response → ai_suggestion rendered in UI → Apply as tag → PUT /notes/{id} 
+→ tag updated and persisted.
+
 ---
