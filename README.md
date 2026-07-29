@@ -532,4 +532,6 @@ Development was done on the `feature/part1-core-app` branch, with incremental co
 
 ## Originality
 
-This project was built with AI assistance (Claude) for code generation and debugging, but all design decisions, testing, and verification were done manually against the assignment's exact requirements.
+## Originality
+
+This project was built with AI assistance from Claude (planning, code generation, and debugging guidance) and Kiro (IDE with built-in AI features), used throughout development. All design decisions, requirement analysis, testing, and verification against the assignment's exact requirements were done personally.
