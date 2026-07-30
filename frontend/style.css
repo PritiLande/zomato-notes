@@ -1,338 +1,1311 @@
+/* =====================================================
+   ZOMATO NOTES - MODERN UI
+   PART 1
+===================================================== */
+
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #f7f7f7;
-  color: #222;
-  line-height: 1.5;
+:root {
+
+  --primary: #e23744;
+  --primary-light: #ff6b6b;
+  --secondary: #4ecdc4;
+  --warning: #ffd166;
+
+  --bg: #f6f8fc;
+  --card: #ffffff;
+  --border: #e6e9ef;
+
+  --text: #2d3748;
+  --text-light: #6b7280;
+
+  --shadow-sm: 0 4px 10px rgba(0,0,0,.05);
+  --shadow-md: 0 10px 25px rgba(0,0,0,.08);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,.12);
+
+  --radius:18px;
+
+  --transition:.25s ease;
 }
 
-/* ---------- Header / Nav ---------- */
-
-#main-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: #e23744;
-  color: white;
-  padding: 12px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+html{
+    scroll-behavior:smooth;
 }
 
-#main-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+body{
+
+    font-family:
+    "Segoe UI",
+    Arial,
+    Helvetica,
+    sans-serif;
+
+    background:
+    linear-gradient(
+    135deg,
+    #fdfbfb 0%,
+    #ebedee 100%
+    );
+
+    color:var(--text);
+
+    line-height:1.6;
+
+    min-height:100vh;
 }
 
-#main-nav h1 {
-  font-size: 1.4rem;
+/* =====================================================
+HEADER
+===================================================== */
+
+#main-header{
+
+    position:sticky;
+    top:0;
+
+    z-index:999;
+
+    padding:18px 30px;
+
+    background:
+    linear-gradient(
+    90deg,
+    #e23744,
+    #ff6b6b
+    );
+
+    box-shadow:var(--shadow-md);
+
 }
 
-#search-box {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: none;
-  min-width: 220px;
+#main-nav{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
 }
 
-/* ---------- Layout ---------- */
+#main-nav h1{
 
-main {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
+    color:white;
+
+    font-size:32px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
 }
 
-#sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 12px;
+#search-box{
+
+    width:320px;
+
+    max-width:100%;
+
+    padding:14px 18px;
+
+    border:none;
+
+    border-radius:30px;
+
+    font-size:15px;
+
+    background:white;
+
+    box-shadow:var(--shadow-sm);
+
+    transition:var(--transition);
+
 }
+
+#search-box:focus{
+
+    outline:none;
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow-md);
+
+}
+
+/* =====================================================
+MAIN LAYOUT
+===================================================== */
+
+main{
+
+    max-width:1200px;
+
+    margin:auto;
+
+    padding:18px;
+
+    display:flex;
+
+    gap:18px;
+
+    align-items:flex-start;
+
+}
+
+#sidebar{
+
+    width:320px;
+
+    flex-shrink:0;
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    padding:18px;
+
+    box-shadow:var(--shadow-md);
+
+    border-top:5px solid var(--secondary);
+
+}
+
+#sidebar h2{
+
+    font-size:22px;
+
+    color:#1f8d84;
+
+    margin-bottom:18px;
+
+}
+
+/* =====================================================
+CONTENT AREA
+===================================================== */
 
 #add-note-section,
-#notes-section {
-  flex: 1;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 20px;
+#notes-section{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow-md);
+
+    padding:20px;
+
+    transition:var(--transition);
+
 }
 
-/* ---------- Form ---------- */
+#add-note-section{
 
-.form-group {
-  margin-bottom: 12px;
+    flex:1;
+
+    border-top:5px solid var(--warning);
+
 }
 
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
-  font-size: 0.9rem;
+#notes-section{
+
+    flex:1.3;
+
+    border-top:5px solid var(--primary);
+
+}
+
+#add-note-section:hover,
+#notes-section:hover,
+#sidebar:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+#add-note-section h2{
+
+    color:#c58b00;
+
+    margin-bottom:14px;
+
+    font-size:26px;
+
+}
+
+#notes-section h2{
+
+    color:var(--primary);
+
+    margin-bottom:14px;
+
+    font-size:26px;
+
+}
+
+/* =====================================================
+FORMS
+===================================================== */
+
+.form-group{
+
+    margin-bottom:12px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:var(--text);
+
 }
 
 .form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: inherit;
+.form-group textarea,
+.form-group select{
+
+    width:100%;
+
+    padding:14px 16px;
+
+    font-size:15px;
+
+    border:2px solid var(--border);
+
+    border-radius:12px;
+
+    background:white;
+
+    transition:var(--transition);
+
+    font-family:inherit;
+
 }
 
-.form-group textarea {
-  min-height: 80px;
-  resize: vertical;
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:
+    0 0 0 4px
+    rgba(226,55,68,.12);
+
 }
 
-#add-note-form button {
-  background-color: #e23744;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
+.form-group textarea{
+
+    min-height:80px;
+
+    resize:vertical;
+
 }
 
-#add-note-form button:hover {
-  background-color: #c62d3a;
+/* =====================================================
+BUTTONS
+===================================================== */
+
+button{
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+    font-family:inherit;
+
 }
 
-.error-message {
-  background-color: #fdecea;
-  color: #b3261e;
-  border: 1px solid #f5c2c0;
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
+#add-note-form button{
+
+    background:
+    linear-gradient(
+    90deg,
+    #ffd166,
+    #ffb703
+    );
+
+    color:#3d3000;
+
+    border:none;
+
+    padding:14px 26px;
+
+    border-radius:14px;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    box-shadow:
+    0 8px 18px
+    rgba(255,183,3,.35);
+
 }
 
-/* ---------- Notes list ---------- */
+#add-note-form button:hover{
 
-.note-card {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 14px;
-  margin-bottom: 12px;
-  background-color: #fafafa;
+    transform:
+    translateY(-3px);
+
+    box-shadow:
+    0 14px 28px
+    rgba(255,183,3,.45);
+
 }
 
-.note-card.highlighted {
-  border: 2px solid #e23744;
-  background-color: #fff5f5;
+#register-section button{
+
+    width:100%;
+
+    background:
+    linear-gradient(
+    90deg,
+    #4ecdc4,
+    #2a9d8f
+    );
+
+    color:white;
+
+    border:none;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    font-size:15px;
+
+    font-weight:700;
+
 }
 
-.note-card h3 {
-  margin-bottom: 6px;
+#register-section button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow-md);
+
 }
 
-.note-card .note-tag {
-  display: inline-block;
-  background-color: #e23744;
-  color: white;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-bottom: 8px;
+/* =====================================================
+   PART 2 - NOTES, AI, SEARCH & CONTROLS
+===================================================== */
+
+/* ===========================
+   NOTE CARDS
+=========================== */
+
+.note-card{
+
+    background:white;
+
+    border:1px solid #edf0f5;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    margin-bottom:20px;
+
+    box-shadow:var(--shadow-sm);
+
+    transition:all .25s ease;
+
+    position:relative;
+
+    overflow:hidden;
+
 }
 
-.note-card .note-content {
-  margin-bottom: 10px;
-  color: #444;
+.note-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    top:0;
+
+    width:6px;
+    height:100%;
+
+    background:linear-gradient(
+        to bottom,
+        var(--primary),
+        var(--secondary)
+    );
+
 }
 
-.note-card button.delete-btn {
-  background-color: #555;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
+.note-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:var(--shadow-lg);
+
 }
 
-.note-card button.delete-btn:hover {
-  background-color: #333;
+.note-card.highlighted{
+
+    border:2px solid var(--primary);
+
+    animation:highlightPulse .8s ease;
+
 }
 
-/* ---------- AI suggestion panel (Part 3) ---------- */
+@keyframes highlightPulse{
 
-.ai-suggests {
-  background-color: #eef6ff;
-  border: 1px solid #cfe3fb;
-  border-radius: 6px;
-  padding: 10px;
-  margin-top: 10px;
-  font-size: 0.85rem;
+    0%{
+        transform:scale(.98);
+    }
+
+    50%{
+        transform:scale(1.02);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+
 }
 
-/* ---------- Tag tree (recursive) ---------- */
+.note-card h3{
 
-#tag-tree ul {
-  list-style: none;
-  padding-left: 16px;
+    font-size:22px;
+
+    color:var(--text);
+
+    margin-bottom:10px;
+
 }
 
-#tag-tree li {
-  margin: 4px 0;
-  cursor: pointer;
+.note-author{
+
+    display:block;
+
+    color:#888;
+
+    font-size:13px;
+
+    margin-bottom:12px;
+
+    font-style:italic;
+
 }
 
-#tag-tree li.collapsed > ul {
-  display: none;
+.note-tag{
+
+    display:inline-block;
+
+    padding:6px 16px;
+
+    border-radius:30px;
+
+    background:linear-gradient(
+        90deg,
+        var(--secondary),
+        #2a9d8f
+    );
+
+    color:white;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    margin-bottom:16px;
+
 }
 
-/* ---------- Part 2: Ranking controls ---------- */
+.note-content{
 
-#ranking-controls {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    color:#555;
+
+    line-height:1.8;
+
+    font-size:15px;
+
+    margin-bottom:18px;
+
 }
 
-.control-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.delete-btn{
+
+    border:none;
+
+    background:#fff4f4;
+
+    color:var(--primary);
+
+    border:2px solid var(--primary);
+
+    padding:10px 20px;
+
+    border-radius:12px;
+
+    font-weight:700;
+
 }
 
-.control-group label {
-  font-weight: bold;
-  font-size: 0.85rem;
-  min-width: 130px;
+.delete-btn:hover{
+
+    background:var(--primary);
+
+    color:white;
+
+}
+
+/* ===========================
+   AI SUGGESTION PANEL
+=========================== */
+
+.ai-suggests{
+
+    margin-top:18px;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    background:linear-gradient(
+        135deg,
+        #eef7ff,
+        #f6fbff
+    );
+
+    border:1px solid #cce2ff;
+
+}
+
+.ai-suggests strong{
+
+    color:#2d6cdf;
+
+}
+
+.ai-suggests span{
+
+    color:#555;
+
+}
+
+.ai-suggests button{
+
+    margin-top:14px;
+
+    background:#2d6cdf;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 18px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+}
+
+.ai-suggests button:hover{
+
+    background:#1e56ba;
+
+}
+
+/* ===========================
+   RANKING CONTROLS
+=========================== */
+
+#ranking-controls{
+
+    background:white;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    margin-bottom:24px;
+
+    box-shadow:var(--shadow-sm);
+
+    border:1px solid #ececec;
+
+}
+
+.control-group{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:18px;
+
+}
+
+.control-group:last-child{
+
+    margin-bottom:0;
+
+}
+
+.control-group label{
+
+    font-weight:700;
+
+    color:#555;
+
+    min-width:150px;
+
 }
 
 .control-group select,
-.control-group input[type="text"] {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.control-group input{
+
+    padding:12px 14px;
+
+    border-radius:12px;
+
+    border:2px solid #e5e7eb;
+
+    font-size:14px;
+
 }
 
-#quick-tag-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.control-group input{
+
+    flex:1;
+
 }
 
-#quick-tag-buttons button {
-  background-color: white;
-  border: 1px solid #e23744;
-  color: #e23744;
-  padding: 4px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.8rem;
+/* ===========================
+   QUICK TAG BUTTONS
+=========================== */
+
+#quick-tag-buttons{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
 }
 
-#quick-tag-buttons button:hover {
-  background-color: #e23744;
-  color: white;
+#quick-tag-buttons button{
+
+    background:white;
+
+    border:2px solid var(--secondary);
+
+    color:var(--secondary);
+
+    border-radius:30px;
+
+    padding:8px 18px;
+
+    font-weight:700;
+
 }
 
-#lookup-result {
-  margin-bottom: 12px;
+#quick-tag-buttons button:hover{
+
+    background:var(--secondary);
+
+    color:white;
+
 }
 
-#lookup-result .found-note {
-  background-color: #e8f8ec;
-  border: 1px solid #b2e2bb;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 0.9rem;
+/* ===========================
+   LOOKUP RESULTS
+=========================== */
+
+.found-note{
+
+    background:#e9f8ef;
+
+    border-left:6px solid #27ae60;
+
+    padding:16px;
+
+    border-radius:12px;
+
+    margin-bottom:18px;
+
+    color:#1f7a3b;
+
+    font-weight:600;
+
 }
 
-#lookup-result .not-found {
-  background-color: #fdecea;
-  border: 1px solid #f5c2c0;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 0.9rem;
-  color: #b3261e;
+.not-found{
+
+    background:#fff3f3;
+
+    border-left:6px solid var(--primary);
+
+    padding:16px;
+
+    border-radius:12px;
+
+    margin-bottom:18px;
+
+    color:var(--primary);
+
+    font-weight:600;
+
 }
 
-/* ---------- Footer ---------- */
+/* ===========================
+   SMART SEARCH
+=========================== */
 
-footer {
-  text-align: center;
-  padding: 16px;
-  color: #777;
-  font-size: 0.85rem;
+#smart-search-section{
+
+    background:linear-gradient(
+        135deg,
+        #f8f2ff,
+        #efe5ff
+    );
+
+    border:2px solid #b57edc;
+
+    border-radius:18px;
+
+    padding:16px;
+
+    margin-bottom:25px;
+
 }
 
-/* ---------- Responsive ---------- */
+#smart-search-section label{
 
-@media (max-width: 600px) {
-  main {
-    flex-direction: column;
-  }
+    font-size:18px;
 
-  #sidebar {
-    width: 100%;
-  }
+    font-weight:700;
 
-  .control-group {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-/* ---------- Part 3: Smart Search (AI) — visually distinct from Part 2 search ---------- */
+    color:#6c3483;
 
-#smart-search-section {
-  background-color: #f3eaff;
-  border: 2px solid #9b59b6;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 16px;
+    margin-bottom:12px;
+
+    display:block;
+
 }
 
-#smart-search-section label {
-  display: block;
-  font-weight: bold;
-  color: #6c3483;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
+#smart-search-input{
+
+    width:100%;
+
+    padding:14px 18px;
+
+    border-radius:14px;
+
+    border:2px solid #caa9e8;
+
+    font-size:15px;
+
+    margin-bottom:18px;
+
 }
 
-#smart-search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #9b59b6;
-  border-radius: 4px;
-  margin-bottom: 8px;
+#smart-search-input:focus{
+
+    outline:none;
+
+    border-color:#9b59b6;
+
+    box-shadow:0 0 0 4px rgba(155,89,182,.15);
+
 }
 
-#smart-search-results .smart-result {
-  background-color: white;
-  border: 1px solid #d8bfe8;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  font-size: 0.85rem;
+.smart-result{
+
+    background:white;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    border:1px solid #e5d6f8;
+
+    box-shadow:var(--shadow-sm);
+
 }
 
-#smart-search-results .smart-result .score {
-  color: #9b59b6;
-  font-weight: bold;
+.smart-result strong{
+
+    font-size:17px;
+
+    color:#333;
+
 }
+
+.smart-result .score{
+
+    color:#9b59b6;
+
+    font-weight:700;
+
+}
+
+.smart-result p{
+
+    margin-top:10px;
+
+    color:#555;
+
+    line-height:1.7;
+
+}
+
+/* ===========================
+   LOADING
+=========================== */
+
+#loading-message{
+
+    text-align:center;
+
+    padding:20px;
+
+    color:#777;
+
+    font-size:16px;
+
+    font-weight:600;
+
+}
+
+/* =====================================================
+   PART 3 - REGISTER, TAG TREE, MESSAGES, FOOTER, MOBILE
+===================================================== */
+
+/* ===========================
+   REGISTER SECTION
+=========================== */
+
+#register-section{
+
+    margin-top:30px;
+
+    padding-top:24px;
+
+    border-top:2px dashed #dfe4ea;
+
+}
+
+#register-section h2{
+
+    color:var(--primary);
+
+    font-size:22px;
+
+    margin-bottom:18px;
+
+}
+
+#viewing-as-select{
+
+    width:100%;
+
+    padding:14px 16px;
+
+    border:2px solid var(--warning);
+
+    border-radius:12px;
+
+    background:#fffdf5;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:var(--transition);
+
+}
+
+#viewing-as-select:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:0 0 0 4px rgba(226,55,68,.12);
+
+}
+
+/* ===========================
+   SUCCESS / ERROR
+=========================== */
+
+.error-message{
+
+    margin-top:12px;
+
+    padding:14px 16px;
+
+    border-radius:12px;
+
+    background:#fff2f2;
+
+    color:#d63031;
+
+    border-left:5px solid #d63031;
+
+    font-size:14px;
+
+}
+
+.success-message{
+
+    margin-top:12px;
+
+    padding:14px 16px;
+
+    border-radius:12px;
+
+    background:#edfdf2;
+
+    color:#1e8449;
+
+    border-left:5px solid #27ae60;
+
+    font-size:14px;
+
+}
+
+/* ===========================
+   TAG TREE
+=========================== */
+
+#tag-tree{
+
+    margin-top:10px;
+
+}
+
+#tag-tree ul{
+
+    list-style:none;
+
+    padding-left:18px;
+
+}
+
+#tag-tree li{
+
+    margin:8px 0;
+
+}
+
+#tag-tree span{
+
+    display:inline-block;
+
+    cursor:pointer;
+
+    padding:6px 10px;
+
+    border-radius:10px;
+
+    transition:all .2s ease;
+
+    color:#2a9d8f;
+
+    font-weight:600;
+
+}
+
+#tag-tree span:hover{
+
+    background:#eefaf9;
+
+    color:var(--primary);
+
+}
+
+#tag-tree li.collapsed > ul{
+
+    display:none;
+
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#f3f4f6;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#d4d4d8;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#a1a1aa;
+
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+footer{
+
+    margin-top:40px;
+
+    padding:24px;
+
+    text-align:center;
+
+    color:#777;
+
+    font-size:14px;
+
+}
+
+/* ===========================
+   SMALL ANIMATIONS
+=========================== */
+
+button{
+
+    transition:
+    transform .2s,
+    box-shadow .2s,
+    background .2s;
+
+}
+
+button:active{
+
+    transform:scale(.97);
+
+}
+
+input,
+textarea,
+select{
+
+    transition:
+    border-color .2s,
+    box-shadow .2s,
+    transform .2s;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+    transform:translateY(-1px);
+
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:1200px){
+
+    main{
+
+        flex-direction:column;
+
+    }
+
+    #sidebar{
+
+        width:100%;
+
+    }
+
+}
+
+@media(max-width:600px){
+
+    body{
+
+        font-size:15px;
+
+    }
+
+    #main-header{
+
+        padding:18px;
+
+    }
+
+    #main-nav{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+    #main-nav h1{
+
+        text-align:center;
+
+        font-size:28px;
+
+    }
+
+    #search-box{
+
+        width:100%;
+
+    }
+
+    main{
+
+        padding:18px;
+
+        gap:20px;
+
+    }
+
+    #sidebar,
+    #add-note-section,
+    #notes-section{
+
+        width:100%;
+
+        padding:22px;
+
+    }
+
+    .control-group{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+    .control-group label{
+
+        min-width:auto;
+
+    }
+
+    #quick-tag-buttons{
+
+        justify-content:center;
+
+    }
+
+    .note-card{
+
+        padding:18px;
+
+    }
+
+    .note-card h3{
+
+        font-size:20px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    #main-nav h1{
+
+        font-size:24px;
+
+    }
+
+    #add-note-form button,
+    #register-section button{
+
+        width:100%;
+
+    }
+
+    .note-tag{
+
+        display:block;
+
+        width:fit-content;
+
+        margin-bottom:12px;
+
+    }
+
+}
+
+/* ===========================
+   FADE IN ANIMATION
+=========================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.note-card,
+.smart-result,
+#ranking-controls,
+#smart-search-section{
+
+    animation:fadeUp .4s ease;
+
+}
+

@@ -28,7 +28,7 @@ copy .env.example .env
 ```
 
 Key variables:
-- `MOCK_AI=1` — uses offline mock AI responses (no API key/internet needed). This is the graded default.
+- `MOCK_AI=1` — uses offline mock AI responses (no API key/internet needed).
 - `DATABASE_URL=sqlite:///./zomato_notes.db` — local SQLite database
 - `DELETE_AUTH_TOKEN=changeme123` — token required for `DELETE /notes/{id}`
 
@@ -103,80 +103,21 @@ Response headers include `x-process-time: 0.3459947109222412` — confirms the c
 
 ### Validation — 422 errors (one per constraint type)
 
-**Malformed email:**
+| Case | Field | Error message |
+|---|---|---|
+| Malformed email | email | "value is not a valid email address: An email address must have an @-sign." |
+| Password too short | password | "String should have at least 8 characters" |
+| Missing required field (User) | name | "Field required" |
+| Over-length title (Note) | title | "String should have at most 120 characters" |
+| Missing required field (Note) | title | "Field required" |
 
-POST /users
-{"name": "Bob", "email": "not-an-email", "password": "bobpass123"}
-
-Response (422):
+Full example (malformed email):
 ```json
 {
   "detail": [{
     "type": "value_error", "loc": ["body", "email"],
     "msg": "value is not a valid email address: An email address must have an @-sign.",
     "input": "not-an-email"
-  }]
-}
-```
-
-**Password too short:**
-
-POST /users
-{"name": "Charlie", "email": "charlie@example.com", "password": "short"}
-
-Response (422):
-```json
-{
-  "detail": [{
-    "type": "string_too_short", "loc": ["body", "password"],
-    "msg": "String should have at least 8 characters",
-    "input": "short", "ctx": {"min_length": 8}
-  }]
-}
-```
-
-**Missing required field:**
-
-POST /users
-{"email": "dave@example.com", "password": "davepass123"}
-
-Response (422):
-```json
-{
-  "detail": [{
-    "type": "missing", "loc": ["body", "name"],
-    "msg": "Field required"
-  }]
-}
-```
-
-**Over-length title (Note, >120 characters):**
-
-POST /notes
-{"title": "This is a deliberately very long title that exceeds the one hundred and twenty character limit set by the Pydantic schema validation rule for testing purposes", "content": "Testing over-length title validation", "tag": "test", "owner_id": 1}
-
-Response (422):
-```json
-{
-  "detail": [{
-    "type": "string_too_long", "loc": ["body", "title"],
-    "msg": "String should have at most 120 characters",
-    "ctx": {"max_length": 120}
-  }]
-}
-```
-
-**Missing required field (title on Note):**
-
-POST /notes
-{"content": "This note has no title", "tag": "test", "owner_id": 1}
-
-Response (422):
-```json
-{
-  "detail": [{
-    "type": "missing", "loc": ["body", "title"],
-    "msg": "Field required"
   }]
 }
 ```
@@ -219,21 +160,10 @@ INFO:zomato-notes:[background] Finished indexing note: Standup Summary
 
 The response returned (200 OK) **before** the background indexing log line appeared — confirming `BackgroundTasks` runs asynchronously and does not block the API response.
 
-### DELETE /notes/{id} — auth token verification
+### DELETE /notes/{id} — auth verification
 
-**Wrong token — 403:**
-
-DELETE /notes/1
-Headers: x-token: wrongtoken123
-
-Response (403): `{"detail": "Invalid or missing x-token"}`
-
-**Correct token — 200:**
-
-DELETE /notes/1
-Headers: x-token: changeme123
-
-Response (200): `{"message": "Note deleted"}`
+Wrong/missing token → 403 `{"detail": "Invalid or missing x-token"}`
+Correct token (`changeme123`) → 200 `{"message": "Note deleted"}`
 
 ### Bulk import (POST /notes/import)
 
@@ -264,7 +194,7 @@ Response (404): `{"detail": "owner_id does not exist"}` — no partial import, z
 ```
 Matches expected result exactly (work=3, health=2, recipes=2, random=2); `travel` correctly excluded (only 1 note, filtered by `HAVING COUNT(*) > 1`).
 
-**GET /reports/long-notes:** returns notes whose content length exceeds the dataset's average content length (raw SQL subquery), e.g. "Standup Summary", "Sprint Retro Notes", "Doctor Visit".
+**GET /reports/long-notes:** returns notes above average content length (raw SQL subquery) — e.g. "Standup Summary," "Doctor Visit."
 
 **GET /reports/user-notes:**
 ```json
@@ -285,6 +215,11 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
 ---
 
 ## Frontend Feature Verification (Part 1B)
+
+### Additional enhancements (beyond core requirements)
+- Register form + "Viewing as" selector — lets multiple users sign up and create notes under their own identity via the real UI, not hardcoded to one user.
+- Note cards display "by [Author]" for clear authorship visibility.
+- Visual polish: gradients, hover effects, color-coded sections.
 
 - **End-to-end integration:** added a note through the UI, refreshed the browser — note persisted (proving real backend persistence, not in-memory only). Deleted a note, refreshed — note stayed gone.
 
@@ -310,19 +245,50 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
 
   Exact CSS rule from `style.css`:
   ```css
-  @media (max-width: 600px) {
-    main {
-      flex-direction: column;
-    }
-
-    #sidebar {
-      width: 100%;
-    }
-
-    .control-group {
-      flex-direction: column;
-      align-items: flex-start;
-    }
+  @media(max-width:600px){
+      body{
+          font-size:15px;
+      }
+      #main-header{
+          padding:18px;
+      }
+      #main-nav{
+          flex-direction:column;
+          align-items:stretch;
+      }
+      #main-nav h1{
+          text-align:center;
+          font-size:28px;
+      }
+      #search-box{
+          width:100%;
+      }
+      main{
+          padding:18px;
+          gap:20px;
+      }
+      #sidebar,
+      #add-note-section,
+      #notes-section{
+          width:100%;
+          padding:22px;
+      }
+      .control-group{
+          flex-direction:column;
+          align-items:stretch;
+      }
+      .control-group label{
+          min-width:auto;
+      }
+      #quick-tag-buttons{
+          justify-content:center;
+      }
+      .note-card{
+          padding:18px;
+      }
+      .note-card h3{
+          font-size:20px;
+      }
   }
   ```
 - **Sticky nav:** header stays visible while scrolling.
@@ -416,37 +382,20 @@ All three verified working against the real backend in the browser (not a standa
 
 ### Mock mode — valid JSON with "tags" and "summary" for 6 of 8 sample notes
 
-**Note 1 — "Test AI Tagging":**
+Example (full detail):
 ```json
-"ai_suggestion": {"tags": ["database", "migration", "script"], "summary": "The database migration script failed overnight due to a locked table, causing delays in the morning deployment"}
+"Meeting notes" → {"tags": ["discussed", "database", "schema"], "summary": "Discussed the database schema for the notes app and agreed on using foreign keys for ownership"}
 ```
 
-**Note 2 — "Morning workout plan":**
-```json
-"ai_suggestion": {"tags": ["minutes", "cardio", "followed"], "summary": "Do 30 minutes of cardio followed by strength training focused on legs and core"}
-```
+All 6 tested notes produced valid JSON with exactly the two required keys:
+- Meeting notes → tags: discussed, database, schema
+- Morning workout plan → tags: minutes, cardio, followed
+- Grocery list → tags: milk, eggs, spinach
+- Recipe idea → tags: making, vegetable, stir
+- Gym schedule change → tags: switch, thursday, move
+- Project deadline reminder → tags: backend, zomato, notes
 
-**Note 3 — "Grocery list":**
-```json
-"ai_suggestion": {"tags": ["milk", "eggs", "spinach"], "summary": "Buy milk, eggs, spinach, chicken breast, and whole wheat bread for the week"}
-```
-
-**Note 4 — "Recipe idea":**
-```json
-"ai_suggestion": {"tags": ["making", "vegetable", "stir"], "summary": "Try making a vegetable stir fry with broccoli, bell peppers, and soy sauce tonight"}
-```
-
-**Note 5 — "Gym schedule change":**
-```json
-"ai_suggestion": {"tags": ["switch", "thursday", "move"], "summary": "Switch leg day to Thursday and move the rest day to Sunday this week"}
-```
-
-**Note 6 — "Project deadline reminder":**
-```json
-"ai_suggestion": {"tags": ["backend", "zomato", "notes"], "summary": "The backend API for the Zomato Notes capstone must be deployed and demoed by Friday"}
-```
-
-All 6 return valid JSON with exactly the two required keys (`"tags"` and `"summary"`). No API key, no internet, no signup needed — `MOCK_AI=1` is the graded default.
+No API key, no internet, no signup needed to reproduce these results.
 
 The 5-part prompt (Instructions / Context / Input / Constraints / Output Format) is defined verbatim in `ai_service.py` as `AUTO_TAG_SYSTEM_PROMPT`.
 
@@ -497,9 +446,9 @@ GET /notes/smart-search?q=leg%20day%20exercise%20plan
 Response (200) — top 3:
 ```json
 [
-  {"id": 28, "title": "Gym schedule change", "similarity_score": 0.6545901298522949},
-  {"id": 23, "title": "Morning workout plan", "similarity_score": 0.6398992538452148},
-  {"id": 30, "title": "Weekend hiking trip", "similarity_score": 0.4038715660572052}
+  {"id": 23, "title": "Morning workout plan", "similarity_score": 0.5229405760765076},
+  {"id": 28, "title": "Gym schedule change", "similarity_score": 0.5091163516044617},
+  {"id": 30, "title": "Weekend hiking trip", "similarity_score": 0.2213084548711776}
 ]
 ```
 ✅ "Gym schedule change" appears in top 3, as required.
@@ -511,9 +460,9 @@ GET /notes/smart-search?q=dinner%20ideas%20with%20vegetables
 Response (200) — top 3:
 ```json
 [
-  {"id": 27, "title": "Recipe idea", "similarity_score": 0.5556811690330505},
-  {"id": 24, "title": "Grocery list", "similarity_score": 0.423724502325058},
-  {"id": 30, "title": "Weekend hiking trip", "similarity_score": 0.22370734810829163}
+  {"id": 24, "title": "Grocery list", "similarity_score": 0.37474074959754944},
+  {"id": 27, "title": "Recipe idea", "similarity_score": 0.2252119481563568},
+  {"id": 29, "title": "Meeting notes", "similarity_score": 0.21223056316375732}
 ]
 ```
 ✅ "Recipe idea" appears in top 3, as required.
@@ -528,9 +477,13 @@ No image or vision API calls are made anywhere in Part 3.
 
 ## Git Workflow
 
-Development was done on the `feature/part1-core-app` branch, with incremental commits progressing through Part 1 (backend, then frontend), Part 2 (backend, then frontend), and Part 3 (backend, then frontend), each tested and verified before moving to the next. Merged into `main` via Pull Request before submission.
+Development was done incrementally, with commits progressing through Part 1 (backend, then frontend), Part 2 (backend, then frontend), and Part 3 (backend, then frontend), each tested and verified before moving to the next. The work was organized into three feature branches, one per part:
 
-## Originality
+- `feature/part1-core-app-final` — Part 1 (Core App)
+- `feature/part2-ranking-engine` — Part 1 + Part 2 (Ranking Engine)
+- `feature/part3-intelligence-layer` — Part 1 + Part 2 + Part 3 (Intelligence Layer, includes this README)
+
+Each branch was merged into `main` via its own Pull Request before submission.
 
 ## Originality
 
