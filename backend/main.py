@@ -50,9 +50,11 @@ async def add_process_time_header(request, call_next):
 
 
 # ---------- Auth dependency for DELETE ----------
-def verify_delete_token(x_token: str = Header(...)):
+def verify_delete_token(x_token: str | None = Header(default=None)):
+    if x_token is None:
+        raise HTTPException(status_code=401, detail="Missing x-token header")
     if x_token != DELETE_AUTH_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid or missing x-token")
+        raise HTTPException(status_code=403, detail="Invalid x-token")
     return True
 
 
