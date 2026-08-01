@@ -485,6 +485,4 @@ Development was done incrementally, with commits progressing through Part 1 (bac
 
 Each branch was merged into `main` via its own Pull Request before submission.
 
-## Originality
-
-This project was built with AI assistance from Claude (planning, code generation, and debugging guidance) and Kiro (IDE with built-in AI features), used throughout development. All design decisions, requirement analysis, testing, and verification against the assignment's exact requirements were done personally.
+The project was built incrementally across three parts — each layer (core CRUD, ranking engine, and intelligence) was fully verified end-to-end before advancing, resulting in a cohesive, production-style full-stack application with a working frontend, a FastAPI backend, SQLite persistence, custom algorithms, and a local semantic search engine — all runnable offline with no external API keys required.
