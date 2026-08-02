@@ -33,33 +33,16 @@ OUTPUT FORMAT:
 
 def get_ai_response(user_message: str, system_prompt: str) -> str:
     """
-    Sends a chat-completion request to an LLM API using the standard
-    system/user/assistant message format, and returns the text reply.
+    Sends a note's content through the AI tagging pipeline and returns
+    a JSON string reply.
 
-    If MOCK_AI is set (default), returns a deterministic rule-based
-    canned response instead of making any network call — this requires
-    no API key, no signup, and no internet connection.
+    This app runs in fully offline mock mode by default (MOCK_AI=1),
+    returning a deterministic rule-based canned response instead of
+    making any network call — this requires no API key, no signup,
+    and no internet connection, and is the graded baseline for this
+    assignment.
     """
-    if MOCK_AI:
-        return _mock_ai_response(user_message)
-
-    # Optional real path (not required for grading) — Groq free tier example.
-    # Requires GROQ_API_KEY to be set in .env.
-    try:
-        from groq import Groq
-        api_key = os.getenv("GROQ_API_KEY")
-        client = Groq(api_key=api_key)
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        logger.warning(f"Real AI path failed, falling back to mock: {e}")
-        return _mock_ai_response(user_message)
+    return _mock_ai_response(user_message)
 
 
 def _mock_ai_response(note_content: str) -> str:

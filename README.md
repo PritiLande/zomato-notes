@@ -127,6 +127,7 @@ Full example (malformed email):
 POST /users
 {"name": "Alice2", "email": "alice@example.com", "password": "alicepass123"}
 
+
 Response (400):
 ```json
 {"detail": "Email already registered"}
@@ -139,12 +140,14 @@ Response (400):
 POST /notes
 {"title": "Standup Summary", "content": "Discussed sprint progress, blockers on the payments API integration, and the plan for the demo on Friday.", "tag": "work", "owner_id": 1}
 
+
 Response (200): note created with `id: 1`, `owner_id: 1`.
 
 **Invalid owner_id — 404:**
 
 POST /notes
 {"title": "Ghost Note", "content": "This should fail because owner doesn't exist.", "tag": "test", "owner_id": 999}
+
 
 Response (404):
 ```json
@@ -158,12 +161,15 @@ Terminal log:
 INFO: "POST /notes HTTP/1.1" 200 OK
 INFO:zomato-notes:[background] Finished indexing note: Standup Summary
 
+
 The response returned (200 OK) **before** the background indexing log line appeared — confirming `BackgroundTasks` runs asynchronously and does not block the API response.
 
 ### DELETE /notes/{id} — auth verification
 
-Wrong/missing token → 403 `{"detail": "Invalid or missing x-token"}`
-Correct token (`changeme123`) → 200 `{"message": "Note deleted"}`
+Missing token → 401 {"detail": "Missing x-token header"}
+Wrong token → 403 {"detail": "Invalid x-token"}
+Correct token (changeme123) → 200 {"message": "Note deleted"}
+
 
 ### Bulk import (POST /notes/import)
 
@@ -172,12 +178,14 @@ Correct token (`changeme123`) → 200 `{"message": "Note deleted"}`
 POST /notes/import?owner_id=1
 File: sample_import.txt (5 non-empty lines)
 
+
 Response (200): `{"created_count": 5}` — one note created per line.
 
 **Invalid owner — 404, zero notes created:**
 
 POST /notes/import?owner_id=999
 File: sample_import.txt
+
 
 Response (404): `{"detail": "owner_id does not exist"}` — no partial import, zero notes created.
 
@@ -225,18 +233,17 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
 
   DevTools Network tab — actual request/response text:
 
-  ```
-  GET /notes HTTP/1.1  →  200 OK
-  Response: [{"id":1,"title":"Standup Summary","content":"Discussed sprint progress, blockers on the payments API integration, and the plan for the demo on Friday.","tag":"work","owner_id":1,"created_at":"2026-07-27T07:20:50.483205"},...]
+GET /notes HTTP/1.1 → 200 OK
+Response: [{"id":1,"title":"Standup Summary","content":"Discussed sprint progress, blockers on the payments API integration, and the plan for the demo on Friday.","tag":"work","owner_id":1,"created_at":"2026-07-27T07:20:50.483205"},...]
 
-  POST /notes HTTP/1.1  →  200 OK
-  Request body: {"title":"Fish Curry Recipe","content":"A quick fish curry with coconut milk.","tag":"recipes","owner_id":1}
-  Response: {"id":11,"title":"Fish Curry Recipe","content":"A quick fish curry with coconut milk.","tag":"recipes","owner_id":1,"created_at":"2026-07-27T08:10:22.112345","ai_suggestion":{"tags":["quick","fish","curry"],"summary":"A quick fish curry with coconut milk"}}
+POST /notes HTTP/1.1 → 200 OK
+Request body: {"title":"Fish Curry Recipe","content":"A quick fish curry with coconut milk.","tag":"recipes","owner_id":1}
+Response: {"id":11,"title":"Fish Curry Recipe","content":"A quick fish curry with coconut milk.","tag":"recipes","owner_id":1,"created_at":"2026-07-27T08:10:22.112345","ai_suggestion":{"tags":["quick","fish","curry"],"summary":"A quick fish curry with coconut milk"}}
 
-  DELETE /notes/11 HTTP/1.1  →  200 OK
-  Headers sent: x-token: changeme123
-  Response: {"message":"Note deleted"}
-  ```
+DELETE /notes/11 HTTP/1.1 → 200 OK
+Headers sent: x-token: changeme123
+Response: {"message":"Note deleted"}
+
 - **CORS:** frontend (`http://127.0.0.1:5500`) successfully calls backend (`http://127.0.0.1:8000`) with zero CORS errors in browser DevTools console (only an unrelated, harmless `favicon.ico` 404).
 - **Dynamic rendering:** all notes rendered via `document.createElement()`/`appendChild()`, no hardcoded HTML.
 - **Debounced search:** search box filters after ~400ms of no typing. Verified by opening browser DevTools console and typing quickly into the search box — the filter only fired once after I stopped typing, not on every keystroke. The `setTimeout`/`clearTimeout` pattern in `script.js` cancels the previous timer on each `input` event, so only the final call after the 400ms pause runs.
@@ -244,7 +251,7 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
 - **Responsive layout:** `@media (max-width: 600px)` rule switches `main` to a single column; verified by resizing the browser window.
 
   Exact CSS rule from `style.css`:
-  ```css
+```css
   @media(max-width:600px){
       body{
           font-size:15px;
@@ -290,10 +297,11 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
           font-size:20px;
       }
   }
-  ```
+```
 - **Sticky nav:** header stays visible while scrolling.
 - **Client-side validation:** empty title/content blocked with an inline error message (no `alert()`).
 - **Code review:** searched `script.js` for `onclick`, `alert(`, `confirm(`, `prompt(` — zero results for all four. All events use `addEventListener()`.
+
 ---
 
 # Part 2 — Integrated Ranking Engine
@@ -305,6 +313,7 @@ Raw SQL JOIN between `users` and `notes` correctly counts each user's notes.
 **Query "apple":**
 
 GET /notes/search?keyword=apple
+
 
 Response (200) — top 3:
 ```json
@@ -319,6 +328,7 @@ Response (200) — top 3:
 
 GET /notes/search?keyword=coffee
 
+
 Response (200) — top 3:
 ```json
 [
@@ -331,6 +341,7 @@ Response (200) — top 3:
 ## Date sort (reusability proof — same function, different key)
 
 GET /notes/search?sort_by=date
+
 
 Response (200) — sorted descending by `created_at_epoch`, using the same `insertion_sort_by_key()` function called with `key="created_at_epoch"` instead of `key="score"` — proving genuine reuse, not a hardcoded sort.
 
@@ -353,6 +364,7 @@ Response (200) — sorted descending by `created_at_epoch`, using the same `inse
 
 GET /notes/quick-find?tag=work
 
+
 Response (200):
 ```json
 {"found": true, "id": 1, "title": "Standup Summary", "tag": "work", "owner_id": 1}
@@ -362,15 +374,43 @@ Empty tag test (no crash):
 
 GET /notes/quick-find?tag=nonexistent-tag
 
+
 Response (200): `{"found": false, "message": "No note found with this tag"}`
 
-## Frontend controls (Part 2)
+## Frontend controls — Network-tab evidence
 
-- **"Sort by: Relevance / Date"** dropdown — calls `GET /notes/search` with the appropriate parameters, re-renders results.
-- **"Jump to exact title"** input (press Enter) + algo selector — calls `GET /notes/lookup`, scrolls to and highlights the found note card.
-- **"Quick tag jump"** buttons (work/health/recipes/travel/random) — calls `GET /notes/quick-find`, displays the first matching note.
+**"Sort by: Date"**
 
-All three verified working against the real backend in the browser (not a standalone script).
+GET /notes/search?sort_by=date
+
+Response (200) — first 3 of 32, sorted descending by created_at_epoch:
+```json
+[
+  {"id": 32, "title": "Animal", "tag": "food", "created_at_epoch": 1785560103.07},
+  {"id": 31, "title": "Test Note ABC123", "tag": "test", "created_at_epoch": 1785559738.65},
+  {"id": 30, "title": "Weekend hiking trip", "tag": "ai-demo", "created_at_epoch": 1785306672.38}
+]
+```
+
+**"Jump to exact title"** — query: "Coffee Tasting" (iterative)
+
+GET /notes/lookup?title=Coffee%20Tasting&algo=iterative
+
+Response (200):
+```json
+{"found": true, "id": 13, "title": "Coffee Tasting", "content": "Sampled three coffee blends today, the dark roast coffee stood out the most.", "tag": "kb-demo", "owner_id": 1}
+```
+
+**"Quick tag jump"** — tag: "work"
+
+GET /notes/quick-find?tag=work
+
+Response (200):
+```json
+{"found": true, "id": 1, "title": "Standup Summary", "content": "Discussed sprint progress, blockers on the payments API integration, and the plan for the demo on Friday.", "tag": "work", "owner_id": 1}
+```
+
+All three verified against the real running backend via the browser's DevTools Network tab, calling the app's actual controls — not a standalone script.
 
 ---
 
@@ -443,6 +483,7 @@ Added a note titled "Server crash investigation" via the UI. The new note card d
 
 GET /notes/smart-search?q=leg%20day%20exercise%20plan
 
+
 Response (200) — top 3:
 ```json
 [
@@ -456,6 +497,7 @@ Response (200) — top 3:
 ### Required test query 2 — "dinner ideas with vegetables"
 
 GET /notes/smart-search?q=dinner%20ideas%20with%20vegetables
+
 
 Response (200) — top 3:
 ```json
@@ -485,4 +527,6 @@ Development was done incrementally, with commits progressing through Part 1 (bac
 
 Each branch was merged into `main` via its own Pull Request before submission.
 
-The project was built incrementally across three parts — each layer (core CRUD, ranking engine, and intelligence) was fully verified end-to-end before advancing, resulting in a cohesive, production-style full-stack application with a working frontend, a FastAPI backend, SQLite persistence, custom algorithms, and a local semantic search engine — all runnable offline with no external API keys required.
+---
+
+*Built across three parts, verified at every step — a notes app that grew from basic CRUD into an AI-augmented knowledge base, running fully offline with no external dependencies.*
