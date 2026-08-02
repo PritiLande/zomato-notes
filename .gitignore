@@ -12,8 +12,8 @@ env/
 .env
 
 # Environment variables
-*.env
-.env.*
+.env
+!.env.example
 
 # FastAPI / Uvicorn
 *.log
