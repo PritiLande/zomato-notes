@@ -1,5 +1,6 @@
 from database import SessionLocal, engine, Base
 import models
+from ranking_dataset import RANKING_DATASET
 
 # Make sure tables exist
 Base.metadata.create_all(bind=engine)
@@ -52,7 +53,19 @@ def seed():
             ))
         db.commit()
 
-        print(f"Seeded {len(SEED_USERS)} users and {len(SEED_NOTES)} notes.")
+        # Part 2: seed the ranking dataset, owned by Alice (owner_id=1), tag="kb-demo"
+        # Let the DB autoincrement real ids (don't reuse RANKING_DATASET's illustrative ids)
+        for note in RANKING_DATASET:
+            db.add(models.Note(
+                owner_id=1,
+                title=note["title"],
+                content=note["content"],
+                tag="kb-demo",
+            ))
+        db.commit()
+
+        print(f"Seeded {len(SEED_USERS)} users, {len(SEED_NOTES)} Part 1 notes, "
+              f"and {len(RANKING_DATASET)} Part 2 ranking notes.")
     finally:
         db.close()
 
