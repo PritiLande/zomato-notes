@@ -40,6 +40,24 @@ async function deleteNote(id) {
   return response.json();
 }
 
+async function registerUser(userData) {
+  const response = await fetch(`${API_BASE}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    const err = new Error("Registration failed");
+    err.detail = errData.detail;
+    err.status = response.status;
+    throw err;
+  }
+  return response.json();
+}
+
 // Part 2: Ranking Engine data layer
 
 async function searchNotes({ keyword, sortBy }) {
@@ -65,9 +83,28 @@ async function quickFindByTag(tag) {
   return response.json();
 }
 
+// Part 3: Smart Search (semantic) data layer
+
+async function smartSearch(query) {
+  const params = new URLSearchParams({ q: query });
+  const response = await fetch(`${API_BASE}/notes/smart-search?${params.toString()}`);
+  if (!response.ok) throw new Error(`Smart search failed: ${response.status}`);
+  return response.json();
+}
+
 // ---------- State ----------
 
 let allNotes = [];
+
+// Tracks known users for displaying note authorship (id -> name)
+const knownUsers = {
+  1: "Alice",
+  2: "Bob",
+};
+
+function getUserName(ownerId) {
+  return knownUsers[ownerId] || `User #${ownerId}`;
+}
 
 // ---------- Rendering ----------
 
@@ -87,6 +124,10 @@ function renderNotes(notes) {
     tag.className = "note-tag";
     tag.textContent = note.tag || "untagged";
 
+    const author = document.createElement("span");
+    author.className = "note-author";
+    author.textContent = `by ${getUserName(note.owner_id)}`;
+
     const content = document.createElement("p");
     content.className = "note-content";
     content.textContent = note.content;
@@ -98,6 +139,7 @@ function renderNotes(notes) {
 
     card.appendChild(title);
     card.appendChild(tag);
+    card.appendChild(author);
     card.appendChild(content);
 
     if (note.ai_suggestion) {
@@ -195,7 +237,7 @@ async function handleDelete(id, cardElement) {
   }
 }
 
-// ---------- Add note form ----------
+// ---------- Add note form (uses "Viewing as" selected owner_id) ----------
 
 function showFormError(message) {
   const el = document.getElementById("form-error");
@@ -214,6 +256,7 @@ document.getElementById("add-note-form").addEventListener("submit", async (e) =>
   const title = document.getElementById("note-title").value.trim();
   const content = document.getElementById("note-content").value.trim();
   const tag = document.getElementById("note-tag").value.trim();
+  const ownerId = parseInt(document.getElementById("viewing-as-select").value, 10);
 
   if (!title || !content) {
     showFormError("Title and content are required.");
@@ -221,12 +264,74 @@ document.getElementById("add-note-form").addEventListener("submit", async (e) =>
   }
 
   try {
-    const newNote = await createNote({ title, content, tag, owner_id: 1 });
+    const newNote = await createNote({ title, content, tag, owner_id: ownerId });
     allNotes.push(newNote);
     renderNotes(allNotes);
     e.target.reset();
   } catch (err) {
     showFormError("Failed to add note. Please try again.");
+  }
+});
+
+// ---------- Register form ----------
+
+function showRegisterError(message) {
+  const el = document.getElementById("register-error");
+  el.textContent = message;
+  el.hidden = false;
+}
+
+function hideRegisterError() {
+  document.getElementById("register-error").hidden = true;
+}
+
+function showRegisterSuccess(message) {
+  const el = document.getElementById("register-success");
+  el.textContent = message;
+  el.hidden = false;
+}
+
+function hideRegisterSuccess() {
+  document.getElementById("register-success").hidden = true;
+}
+
+function addUserToViewingAsDropdown(user) {
+  knownUsers[user.id] = user.name;
+  const select = document.getElementById("viewing-as-select");
+  const option = document.createElement("option");
+  option.value = user.id;
+  option.textContent = user.name;
+  select.appendChild(option);
+  select.value = user.id; // auto-select the newly registered user
+}
+
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideRegisterError();
+  hideRegisterSuccess();
+
+  const name = document.getElementById("reg-name").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value;
+
+  if (!name || !email || !password) {
+    showRegisterError("All fields are required.");
+    return;
+  }
+
+  try {
+    const newUser = await registerUser({ name, email, password });
+    addUserToViewingAsDropdown(newUser);
+    showRegisterSuccess(`Registered "${newUser.name}" successfully! Now selected in "Viewing as".`);
+    e.target.reset();
+  } catch (err) {
+    if (err.status === 400 && err.detail) {
+      showRegisterError(err.detail);
+    } else if (err.status === 422) {
+      showRegisterError("Please check your input (valid email, password 8+ characters).");
+    } else {
+      showRegisterError("Registration failed. Please try again.");
+    }
   }
 });
 
@@ -257,7 +362,6 @@ document.getElementById("sort-select").addEventListener("change", async (e) => {
     if (sortBy === "date") {
       results = await searchNotes({ sortBy: "date" });
     } else {
-      // relevance mode needs a keyword; use current search box value, or fallback
       const keyword = document.getElementById("search-box").value.trim() || "the";
       results = await searchNotes({ keyword });
     }
@@ -300,7 +404,6 @@ function renderLookupResult(result) {
   foundDiv.textContent = `Found: "${result.title}" (tag: ${result.tag})`;
   container.appendChild(foundDiv);
 
-  // Scroll to and highlight the note card if it's currently rendered
   const card = document.getElementById(`note-card-${result.id}`);
   if (card) {
     card.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -322,6 +425,60 @@ document.getElementById("quick-tag-buttons").addEventListener("click", async (e)
     showError("Quick tag jump failed.");
   }
 });
+
+// ---------- Part 3: Smart Search (AI, semantic) ----------
+
+let smartSearchDebounceTimer = null;
+
+document.getElementById("smart-search-input").addEventListener("input", (e) => {
+  clearTimeout(smartSearchDebounceTimer);
+  const query = e.target.value.trim();
+  const resultsContainer = document.getElementById("smart-search-results");
+
+  if (!query) {
+    resultsContainer.innerHTML = "";
+    return;
+  }
+
+  smartSearchDebounceTimer = setTimeout(async () => {
+    try {
+      const results = await smartSearch(query);
+      renderSmartSearchResults(results);
+    } catch (err) {
+      showError("Smart search failed.");
+    }
+  }, 500);
+});
+
+function renderSmartSearchResults(results) {
+  const container = document.getElementById("smart-search-results");
+  container.innerHTML = "";
+
+  if (results.length === 0) {
+    container.textContent = "No matches found.";
+    return;
+  }
+
+  results.forEach((note) => {
+    const div = document.createElement("div");
+    div.className = "smart-result";
+
+    const titleEl = document.createElement("strong");
+    titleEl.textContent = note.title;
+
+    const scoreEl = document.createElement("span");
+    scoreEl.className = "score";
+    scoreEl.textContent = ` (similarity: ${note.similarity_score.toFixed(3)})`;
+
+    const contentEl = document.createElement("p");
+    contentEl.textContent = note.content;
+
+    div.appendChild(titleEl);
+    div.appendChild(scoreEl);
+    div.appendChild(contentEl);
+    container.appendChild(div);
+  });
+}
 
 // ---------- Recursive nested tag tree ----------
 

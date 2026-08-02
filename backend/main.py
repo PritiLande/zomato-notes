@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import logging
 from datetime import datetime
 
@@ -13,6 +14,8 @@ import schemas
 import crud
 from database import engine, get_db
 from algorithms import insertion_sort_by_key, binary_search_iterative, binary_search_recursive, linear_search
+from ai_service import get_ai_response, AUTO_TAG_SYSTEM_PROMPT
+from semantic_search import rank_notes_by_similarity
 
 load_dotenv()
 
@@ -47,9 +50,11 @@ async def add_process_time_header(request, call_next):
 
 
 # ---------- Auth dependency for DELETE ----------
-def verify_delete_token(x_token: str = Header(...)):
+def verify_delete_token(x_token: str | None = Header(default=None)):
+    if x_token is None:
+        raise HTTPException(status_code=401, detail="Missing x-token header")
     if x_token != DELETE_AUTH_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid or missing x-token")
+        raise HTTPException(status_code=403, detail="Invalid x-token")
     return True
 
 
@@ -71,14 +76,27 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # ---------- Note endpoints ----------
 
-@app.post("/notes", response_model=schemas.NoteResponse)
+@app.post("/notes")
 def create_note(note: schemas.NoteCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     owner = crud.get_user(db, note.owner_id)
     if not owner:
         raise HTTPException(status_code=404, detail="owner_id does not exist")
     db_note = crud.create_note(db, note)
     background_tasks.add_task(simulate_indexing, db_note.title)
-    return db_note
+
+    ai_suggestion = None
+    try:
+        raw_response = get_ai_response(db_note.content, AUTO_TAG_SYSTEM_PROMPT)
+        parsed = json.loads(raw_response)
+        if "tags" in parsed and "summary" in parsed:
+            ai_suggestion = parsed
+    except Exception as e:
+        logger.warning(f"AI suggestion failed for note {db_note.id}: {e}")
+        ai_suggestion = None
+
+    response_data = schemas.NoteResponse.model_validate(db_note).model_dump()
+    response_data["ai_suggestion"] = ai_suggestion
+    return response_data
 
 
 @app.get("/notes", response_model=list[schemas.NoteResponse])
@@ -155,6 +173,17 @@ def quick_find_notes(tag: str, db: Session = Depends(get_db)):
     if result is None:
         return {"found": False, "message": "No note found with this tag"}
     return {"found": True, **result}
+
+
+@app.get("/notes/smart-search")
+def smart_search(q: str, db: Session = Depends(get_db)):
+    notes = db.query(models.Note).filter(models.Note.tag == "ai-demo").all()
+    notes_as_dicts = [
+        {"id": n.id, "title": n.title, "content": n.content, "tag": n.tag, "owner_id": n.owner_id}
+        for n in notes
+    ]
+    results = rank_notes_by_similarity(q, notes_as_dicts, top_k=3)
+    return results
 
 
 # ---------- Note endpoints continued (owner_id path patterns) ----------
