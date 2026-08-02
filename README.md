@@ -13,6 +13,10 @@ A full-stack notes and knowledge-base application for on-call support engineers:
 ```bash
 git clone https://github.com/PritiLande/zomato-notes.git
 cd zomato-notes/backend
+**Python version:** This project requires Python 3.11–3.13. Python 3.14 is not yet 
+supported by `pydantic-core==2.23.4` (no pre-built wheel available) and will fail 
+to install unless you have a C++ build toolchain. If `python -m venv venv` uses 
+Python 3.14, use `py -3.13 -m venv venv` instead (or any 3.11–3.13 installation).
 python -m venv venv
 venv\Scripts\Activate.ps1        # Windows PowerShell
 # source venv/bin/activate       # macOS/Linux
